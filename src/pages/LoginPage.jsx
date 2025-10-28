@@ -67,6 +67,7 @@ const LoginPage = ({ onLogin = () => {} }) => {
       const user = data.user || data;
 
       onLogin({ auth: authHeader, user });
+      sessionStorage.setItem("basicAuth", authHeader);
     } catch (err) {
       console.error("Login error:", err);
       setServerError(err.message || "Error al iniciar sesión");

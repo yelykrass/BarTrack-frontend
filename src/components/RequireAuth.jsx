@@ -6,7 +6,6 @@ const RequireAuth = ({ children }) => {
   const location = useLocation();
 
   if (!basicAuth) {
-    // Not authenticated — redirect to login, preserve where the user wanted to go
     return <Navigate to="/" state={{ from: location }} replace />;
   }
 

@@ -1,72 +1,32 @@
-import React, { useEffect, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
-import LoginPage from "./pages/LoginPage";
-import Dashboard from "./pages/Dashboard";
+// App.jsx
+import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+
+import AuthRepository from "./components/AuthRepository";
 import RequireAuth from "./components/RequireAuth";
+import LoginPage from "./pages/LoginPage"
 
-function App() {
-  // We'll store the user in memory and keep Basic auth header in sessionStorage
-  const [user, setUser] = useState(null);
-
-  // On mount, if Basic auth header exists in sessionStorage, try to fetch current user
-  useEffect(() => {
-    const basicAuth = sessionStorage.getItem("basicAuth");
-    if (!basicAuth) return;
-
-    const fetchMe = async () => {
-      try {
-        const base = import.meta.env.VITE_API_URL || "";
-        const res = await fetch(`${base}/me`, {
-          headers: { Authorization: basicAuth },
-        });
-        if (!res.ok) {
-          // auth invalid — remove it
-          sessionStorage.removeItem("basicAuth");
-          setUser(null);
-          return;
-        }
-        const data = await res.json();
-        setUser(data.user || data);
-      } catch (err) {
-        console.error("Failed to fetch current user:", err);
-        setUser(null);
-      }
-    };
-
-    fetchMe();
-  }, []);
-
-  const handleLogin = ({ auth, user: loggedUser }) => {
-    // Save Basic auth header in sessionStorage (ephemeral) and keep user in memory state.
-    if (auth) sessionStorage.setItem("basicAuth", auth);
-    setUser(loggedUser || null);
-  };
-
-  const handleLogout = () => {
-    sessionStorage.removeItem("basicAuth");
-    setUser(null);
-  };
+const App = () => {
+  const [authData, setAuthData] = useState({ auth: null, user: null });
 
   return (
     <Router>
       <Routes>
         <Route
           path="/"
-          element={user ? <Navigate to="/dashboard" /> : <LoginPage onLogin={handleLogin} />}
+          element={<LoginPage onLogin={(data) => setAuthData(data)} />}
         />
-
         <Route
-          path="/dashboard"
+          path="/private"
           element={
-            <RequireAuth>
-              <Dashboard user={user} onLogout={handleLogout} />
+            <RequireAuth auth={authData.auth}>
+              <AuthRepository auth={authData.auth} user={authData.user} />
             </RequireAuth>
           }
         />
       </Routes>
     </Router>
   );
-}
+};
 
 export default App;
-
