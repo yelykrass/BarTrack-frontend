@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { Eye, EyeClosed, Mail, Lock } from "lucide-react";
 import BarTrack from "../assets/logo.png";
 import "./LoginPage.css";
+import AuthRepository from "../components/AuthRepository";
 
 const LoginPage = ({ onLogin = () => {} }) => {
   const [formData, setFormData] = useState({ email: "", password: "" });
@@ -39,42 +40,39 @@ const LoginPage = ({ onLogin = () => {} }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!validateForm()) return;
+
+    if (!validateForm()) return; // <-- тут перевірка форми
 
     setLoading(true);
     setServerError("");
 
-    try {
-      const base = import.meta.env.VITE_API_URL || "";
-      const credentials = btoa(`${formData.email}:${formData.password}`);
-      const authHeader = `Basic ${credentials}`;
+    const authRepository = new AuthRepository();
 
-      const res = await fetch(`${base}/login`, {
-        method: "POST",
-        headers: {
-          Authorization: authHeader,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ email: formData.email }),
+    try {
+      const result = await authRepository.login({
+        email: formData.email,
+        password: formData.password,
       });
 
-      if (!res.ok) {
-        const text = await res.text();
-        throw new Error(text || `Login failed with status ${res.status}`);
-      }
-
-      const data = await res.json();
-      const user = data.user || data;
-
-      onLogin({ auth: authHeader, user });
-      sessionStorage.setItem("basicAuth", authHeader);
-    } catch (err) {
-      console.error("Login error:", err);
-      setServerError(err.message || "Error al iniciar sesión");
+      onLogin(result);
+    } catch (error) {
+      console.log(error);
+      setServerError("Помилка входу");
     } finally {
       setLoading(false);
     }
   };
+
+  // const handleSubmit = async (e) => {
+  //   e.preventDefault();
+  //   if (!validateForm()) return;
+
+  //   // llamar al metodo login de AuthRepository
+
+  //   setLoading(true);
+  //   setServerError("");
+
+  // };
 
   return (
     <div className="login-page">
@@ -101,7 +99,9 @@ const LoginPage = ({ onLogin = () => {} }) => {
                   required
                 />
               </div>
-              {errors.email && <span className="error-message">{errors.email}</span>}
+              {errors.email && (
+                <span className="error-message">{errors.email}</span>
+              )}
             </div>
 
             <div className="input-group">
@@ -111,10 +111,14 @@ const LoginPage = ({ onLogin = () => {} }) => {
                 </div>
                 <input
                   type={showPassword ? "text" : "password"}
-                  className={`login-input ${errors.password ? "has-error" : ""}`}
+                  className={`login-input ${
+                    errors.password ? "has-error" : ""
+                  }`}
                   placeholder="Contraseña"
                   value={formData.password}
-                  onChange={(e) => handleInputChange("password", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("password", e.target.value)
+                  }
                   required
                 />
                 <button
@@ -126,10 +130,16 @@ const LoginPage = ({ onLogin = () => {} }) => {
                   {showPassword ? <Eye /> : <EyeClosed />}
                 </button>
               </div>
-              {errors.password && <span className="error-message">{errors.password}</span>}
+              {errors.password && (
+                <span className="error-message">{errors.password}</span>
+              )}
             </div>
 
-            {serverError && <div className="error-message" style={{ marginBottom: 8 }}>{serverError}</div>}
+            {serverError && (
+              <div className="error-message" style={{ marginBottom: 8 }}>
+                {serverError}
+              </div>
+            )}
 
             <button type="submit" className="login-button" disabled={loading}>
               {loading ? "Entrando..." : "Entrar"}

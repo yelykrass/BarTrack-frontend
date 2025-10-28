@@ -12,27 +12,30 @@ export default class AuthRepository {
    */
   async login(credentials) {
     try {
-      const authHeader = `Basic ${btoa(`${credentials.email}:${credentials.password}`)}`;
+      // const authHeader = `Basic ${btoa(
+      //   `${credentials.email}:${credentials.password}`
+      // )}`;
 
-      const response = await axios.get(
-        `${this.baseUri}/login`,
-        {
-          headers: {
-            Authorization: authHeader,
-          },
-          withCredentials: true, // щоб сесійне кукі працювало
-        }
-      );
+      const response = await axios.get(`${this.baseUri}/login`, {
+        // headers: {
+        //   Authorization: authHeader,
+        // },
+        auth: {
+          username: credentials.email,
+          password: credentials.password,
+        },
+        withCredentials: true, // щоб сесійне кукі працювало
+      });
 
-      const user = response.data.user || response.data;
-
+      //const user = response.data.user || response.data;
+      console.log(response.status);
       // Зберігаємо Basic Auth у sessionStorage для RequireAuth
-      sessionStorage.setItem("basicAuth", authHeader);
+      // sessionStorage.setItem("basicAuth");
 
-      return {
-        auth: authHeader,
-        user,
-      };
+      // return {
+      //   auth: authHeader,
+      //   user,
+      // };
     } catch (error) {
       console.error("Login error:", error);
       throw new Error(error.response?.data?.error || "Error al iniciar sesión");
