@@ -1,15 +1,18 @@
 import React from "react";
 import { Navigate, useLocation } from "react-router-dom";
+import { useAuth } from "../hooks/useAuth";
 
 const RequireAuth = ({ children }) => {
-  const basicAuth = sessionStorage.getItem("basicAuth");
+  const { isAuthenticated } = useAuth();
   const location = useLocation();
 
-  if (!basicAuth) {
-    return <Navigate to="/" state={{ from: location }} replace />;
-  }
+  if (isAuthenticated === null) return <div>Loading...</div>;
 
-  return children;
+  return isAuthenticated ? (
+    children
+  ) : (
+    <Navigate to="/login" state={{ from: location }} replace />
+  );
 };
 
 export default RequireAuth;

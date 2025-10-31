@@ -2,14 +2,16 @@ import React, { useState } from "react";
 import { Eye, EyeClosed, Mail, Lock } from "lucide-react";
 import BarTrack from "../assets/logo.png";
 import "./LoginPage.css";
-import AuthRepository from "../components/AuthRepository";
+import { useAuth } from "../hooks/useAuth";
 
-const LoginPage = ({ onLogin = () => {} }) => {
+const LoginPage = () => {
   const [formData, setFormData] = useState({ email: "", password: "" });
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [serverError, setServerError] = useState("");
+
+  const { login } = useAuth();
 
   const handleInputChange = (field, value) => {
     setFormData((prev) => ({ ...prev, [field]: value }));
@@ -41,38 +43,20 @@ const LoginPage = ({ onLogin = () => {} }) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!validateForm()) return; // <-- тут перевірка форми
+    if (!validateForm()) return;
 
     setLoading(true);
     setServerError("");
 
-    const authRepository = new AuthRepository();
-
     try {
-      const result = await authRepository.login({
-        email: formData.email,
-        password: formData.password,
-      });
-
-      onLogin(result);
+      await login(formData.email, formData.password);
     } catch (error) {
       console.log(error);
-      setServerError("Помилка входу");
+      setServerError("Error entrar");
     } finally {
       setLoading(false);
     }
   };
-
-  // const handleSubmit = async (e) => {
-  //   e.preventDefault();
-  //   if (!validateForm()) return;
-
-  //   // llamar al metodo login de AuthRepository
-
-  //   setLoading(true);
-  //   setServerError("");
-
-  // };
 
   return (
     <div className="login-page">
