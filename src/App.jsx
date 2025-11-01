@@ -1,10 +1,10 @@
-import { useEffect } from "react";
-import { useAuth } from "./hooks/useAuth";
-import LoginPage from "./pages/LoginPage";
+//import { useAuth } from "./hooks/useAuth";
 import { useNavigate } from "react-router-dom";
+import { useAuth } from "./hooks/useAuth";
+import { useEffect } from "react";
 
-const App = () => {
-  const { redirectTo, setRedirectTo, isAuthenticated } = useAuth();
+const App = ({ children }) => {
+  const { redirectTo, setRedirectTo } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -14,14 +14,7 @@ const App = () => {
     }
   }, [redirectTo, navigate, setRedirectTo]);
 
-  useEffect(() => {
-    if (isAuthenticated) {
-      navigate("/dashboard", { replace: true });
-    }
-  }, [isAuthenticated, navigate]);
-
-  return <LoginPage />;
-  // return <Navigate to="/login" replace />;
+  return children;
 };
 
 export default App;

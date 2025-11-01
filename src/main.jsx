@@ -11,13 +11,21 @@ createRoot(document.getElementById("root")).render(
   <BrowserRouter>
     <AuthProvider>
       <Routes>
-        <Route path="/" element={<App />} />
-        <Route path="/login" element={<LoginPage />} />
+        <Route
+          path="/"
+          element={
+            <App>
+              <LoginPage />
+            </App>
+          }
+        />
         <Route
           path="/dashboard"
           element={
             <RequireAuth>
-              <Dashboard />
+              <App>
+                <Dashboard />
+              </App>
             </RequireAuth>
           }
         />

@@ -20,21 +20,59 @@ export default class AuthRepository {
         withCredentials: true,
       });
 
-      if (response.status === 202) {
+      if (response.status === 202 || response.status === 200) {
         return { auth: true, user: response.data.user || null };
       } else {
         return { auth: false };
       }
     } catch (error) {
       console.error("Login error:", error);
-      throw new Error(error.response?.data?.error || "Error al iniciar sesión");
+      if (error.response?.status === 401) {
+        throw new Error("Email o contraseña incorrectos");
+      } else if (!error.response) {
+        throw new Error("Error al conectarse al servidor");
+      }
+      throw new Error("Error al iniciar sesión");
     }
   }
+  // async logout() {
+  //   try {
+  //     await axios.get(`${this.baseUri}/logout`, { withCredentials: true });
+  //   } catch (error) {
+  //     console.warn("Logout request failed:", error);
+  //     if (!error.response) {
+  //       throw new Error("Error al conectarse al servidor");
+  //     }
+  //     throw new Error("Error al cerrar sesión");
+  //   }
+  // }
   async logout() {
+    // "М'який" logout — нічого на бек не відправляємо
+    return true; // просто повертаємо true, щоб AuthProvider міг працювати
+  }
+
+  async checkSession() {
     try {
-      await axios.get(`${this.baseUri}/logout`, {}, { withCredentials: true });
+      const response = await axios.get(`${this.baseUri}/check-session`, {
+        withCredentials: true,
+      });
+      return response.data; // { auth: true/false, user }
     } catch (error) {
-      console.warn("Logout request failed:", error);
+      console.warn("Check session failed:", error);
+      if (error.response?.status === 401) {
+        return { auth: false, user: null, message: "La sesión ha terminado." };
+      } else if (!error.response) {
+        return {
+          auth: false,
+          user: null,
+          message: "Error al conectarse al servidor",
+        };
+      }
+      return {
+        auth: false,
+        user: null,
+        message: "Error al verificar la sesión",
+      };
     }
   }
 }
