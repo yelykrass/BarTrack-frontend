@@ -30,4 +30,11 @@ export default class AuthRepository {
       throw new Error(error.response?.data?.error || "Error al iniciar sesión");
     }
   }
+  async logout() {
+    try {
+      await axios.get(`${this.baseUri}/logout`, {}, { withCredentials: true });
+    } catch (error) {
+      console.warn("Logout request failed:", error);
+    }
+  }
 }

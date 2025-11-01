@@ -4,7 +4,7 @@ import LoginPage from "./pages/LoginPage";
 import { useNavigate } from "react-router-dom";
 
 const App = () => {
-  const { redirectTo, setRedirectTo } = useAuth();
+  const { redirectTo, setRedirectTo, isAuthenticated } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -13,6 +13,12 @@ const App = () => {
       setRedirectTo(null);
     }
   }, [redirectTo, navigate, setRedirectTo]);
+
+  useEffect(() => {
+    if (isAuthenticated) {
+      navigate("/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, navigate]);
 
   return <LoginPage />;
   // return <Navigate to="/login" replace />;
