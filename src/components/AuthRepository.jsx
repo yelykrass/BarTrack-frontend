@@ -35,20 +35,27 @@ export default class AuthRepository {
       throw new Error("Error al iniciar sesión");
     }
   }
-  // async logout() {
-  //   try {
-  //     await axios.get(`${this.baseUri}/logout`, { withCredentials: true });
-  //   } catch (error) {
-  //     console.warn("Logout request failed:", error);
-  //     if (!error.response) {
-  //       throw new Error("Error al conectarse al servidor");
-  //     }
-  //     throw new Error("Error al cerrar sesión");
-  //   }
-  // }
+
   async logout() {
-    // "М'який" logout — нічого на бек не відправляємо
-    return true; // просто повертаємо true, щоб AuthProvider міг працювати
+    try {
+      const response = await axios.post(
+        `${this.baseUri}/logout`,
+        {},
+        { withCredentials: true }
+      );
+
+      if (response.status === 200) {
+        return true;
+      } else {
+        return false;
+      }
+    } catch (error) {
+      console.warn("Logout request failed:", error);
+      if (!error.response) {
+        throw new Error("Error al conectarse al servidor");
+      }
+      throw new Error("Error al cerrar sesión");
+    }
   }
 
   async checkSession() {
