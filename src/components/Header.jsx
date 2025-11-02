@@ -14,18 +14,23 @@ const Header = () => {
 
   return (
     <>
-      <header className="bg-white p-4 border-b border-[#cfd8c1] flex justify-between items-center">
-        <h1 className="text-xl font-bold text-[#1f2d1c]">BarTrack</h1>
-        {isAuthenticated && (
-          <button
-            onClick={() => setIsLogoutConfirmOpen(true)}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-[#7a8770] rounded-md border border-transparent hover:border-[#cfd8c1] hover:bg-gray-100 hover:text-[#1f2d1c] transition-all duration-200"
-          >
-            <LogOut size={16} />
-            <span>Cerrar sesión</span>
-          </button>
-        )}
+      <header className="bg-white border-b border-[#cfd8c1]">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 flex items-center justify-between h-16">
+          <h1 className="text-lg font-semibold text-[#1f2d1c]">BarTrack</h1>
+          <div className="flex items-center gap-3">
+            {isAuthenticated && (
+              <button
+                onClick={() => setIsLogoutConfirmOpen(true)}
+                className="inline-flex items-center gap-2 px-3 py-2 text-sm font-medium text-[#7a8770] rounded-md hover:text-[#1f2d1c] focus:outline-none focus:ring-2 focus:ring-emerald-200"
+              >
+                <LogOut size={18} />
+                <span>Cerrar sesión</span>
+              </button>
+            )}
+          </div>
+        </div>
       </header>
+
       <ConfirmationModal
         isOpen={isLogoutConfirmOpen}
         onClose={() => setIsLogoutConfirmOpen(false)}
@@ -33,7 +38,7 @@ const Header = () => {
         title="Confirmar Cierre de Sesión"
         message="¿Estás seguro de que quieres cerrar la sesión?"
         confirmText="Cerrar Sesión"
-        confirmButtonClass="bg-[#ef4444] hover:bg-red-700 text-white"
+        confirmButtonClass="bg-[#ef4444] hover:bg-red-700"
         icon={<LogOut className="h-6 w-6 text-[#ef4444]" />}
       />
     </>
