@@ -6,6 +6,7 @@ import LoginPage from "./pages/LoginPage.jsx";
 import Dashboard from "./pages/Dashboard.jsx";
 import { AuthProvider } from "./components/AuthProvider.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
+import LayoutAuthenticated from "./components/LayoutAuthenticated.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -24,7 +25,9 @@ createRoot(document.getElementById("root")).render(
           element={
             <RequireAuth>
               <App>
-                <Dashboard />
+                <LayoutAuthenticated>
+                  <Dashboard />
+                </LayoutAuthenticated>
               </App>
             </RequireAuth>
           }
