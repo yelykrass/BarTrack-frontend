@@ -7,6 +7,8 @@ import Dashboard from "./pages/Dashboard.jsx";
 import { AuthProvider } from "./components/AuthProvider.jsx";
 import RequireAuth from "./components/RequireAuth.jsx";
 import LayoutAuthenticated from "./components/LayoutAuthenticated.jsx";
+import InventoryPage from "./pages/InventoryPage.jsx";
+import { InventoryProvider } from "./components/InventoryProvider.jsx";
 
 createRoot(document.getElementById("root")).render(
   <BrowserRouter>
@@ -27,6 +29,20 @@ createRoot(document.getElementById("root")).render(
               <App>
                 <LayoutAuthenticated>
                   <Dashboard />
+                </LayoutAuthenticated>
+              </App>
+            </RequireAuth>
+          }
+        />
+        <Route
+          path="/inventario"
+          element={
+            <RequireAuth>
+              <App>
+                <LayoutAuthenticated>
+                  <InventoryProvider>
+                    <InventoryPage />
+                  </InventoryProvider>
                 </LayoutAuthenticated>
               </App>
             </RequireAuth>
