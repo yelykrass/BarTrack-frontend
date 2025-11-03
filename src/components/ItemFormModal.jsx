@@ -17,6 +17,7 @@ const ItemFormModal = ({ isOpen, onClose, onSave, item }) => {
   useEffect(() => {
     if (item) {
       setFormData({
+        id: item.id || null,
         name: item.name,
         category: item.category,
         quantity: item.quantity,
@@ -25,6 +26,7 @@ const ItemFormModal = ({ isOpen, onClose, onSave, item }) => {
       });
     } else {
       setFormData({
+        id: null,
         name: "",
         category: "",
         quantity: 0,
@@ -43,6 +45,7 @@ const ItemFormModal = ({ isOpen, onClose, onSave, item }) => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+    console.log("Saving item:", formData);
     onSave(formData);
   };
 
