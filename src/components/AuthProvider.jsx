@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback } from "react";
 import AuthRepository from "./AuthRepository";
 import { AuthContext } from "../context/AuthContext";
 import { useCheckAuth } from "../hooks/useCheckAuth";
@@ -7,41 +7,55 @@ export const AuthProvider = ({ children }) => {
   const [isAuthenticated, setIsAuthenticated] = useState(null);
   const [user, setUser] = useState(null);
   const [redirectTo, setRedirectTo] = useState(null);
-  const checkAuth = useCheckAuth();
   const authRepo = useMemo(() => new AuthRepository(), []);
+  const checkAuth = useCheckAuth();
 
-  useEffect(() => {
-    const fetchAuth = async () => {
-      const response = await checkAuth();
-      setIsAuthenticated(response.auth);
-      setUser(response.user || null);
-      if (response.auth) {
+  const login = useCallback(
+    async (email, password) => {
+      const result = await authRepo.login({ email, password });
+      if (result.auth) {
+        setIsAuthenticated(true);
+        setUser(result.user);
         setRedirectTo("/dashboard");
-      }
-    };
-    fetchAuth();
-  }, [checkAuth]);
+      } else setIsAuthenticated(false);
+      return result;
+    },
+    [authRepo]
+  );
 
-  const login = async (email, password) => {
-    const result = await authRepo.login({ email, password });
-    if (result?.auth) {
-      setIsAuthenticated(true);
-      setUser(result.user);
-      setRedirectTo("/dashboard");
-    } else {
-      setIsAuthenticated(false);
-    }
-    return result;
-  };
-
-  const logout = async () => {
+  const logout = useCallback(async () => {
     await authRepo.logout();
     setIsAuthenticated(false);
     setUser(null);
     localStorage.clear();
     sessionStorage.clear();
     setRedirectTo("/");
-  };
+  }, [authRepo]);
+
+  useEffect(() => {
+    const syncSession = async () => {
+      const response = await checkAuth();
+      setIsAuthenticated(response.auth);
+      setUser(response.user || null);
+    };
+    syncSession();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    const handleUnauthorized = () => logout();
+    window.addEventListener("unauthorized", handleUnauthorized);
+    return () => window.removeEventListener("unauthorized", handleUnauthorized);
+  }, [logout]);
+
+  // ⏱ автоматичне перевіряння сесії
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    const id = setInterval(async () => {
+      const r = await checkAuth();
+      if (!r.auth) logout();
+    }, 30000);
+    return () => clearInterval(id);
+  }, [isAuthenticated, checkAuth, logout]);
 
   return (
     <AuthContext.Provider
@@ -52,7 +66,6 @@ export const AuthProvider = ({ children }) => {
         logout,
         redirectTo,
         setRedirectTo,
-        checkAuth,
       }}
     >
       {children}

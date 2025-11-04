@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo, useCallback } from "react";
 import { InventoryContext } from "../context/InventoryContext";
 import { useAuth } from "../hooks/useAuth";
-import ItemRepository from "../components/ItemRepository";
+import ItemRepository from "./ItemRepository";
 
 export const InventoryProvider = ({ children }) => {
   const { isAuthenticated, logout } = useAuth();
@@ -13,18 +13,14 @@ export const InventoryProvider = ({ children }) => {
   const [editingItem, setEditingItem] = useState(null);
   const [deleteItem, setDeleteItem] = useState(null);
 
-  // 🧠 робимо функцію стабільною, щоб не створювалася при кожному рендері
   const fetchItems = useCallback(async () => {
     if (!isAuthenticated) return;
     setLoading(true);
     try {
       const data = await repo.getAll();
       setItems(data);
-    } catch (error) {
-      console.error("Error fetching items:", error);
-      if (error?.response?.status === 401 || error.message === "Unauthorized") {
-        logout();
-      }
+    } catch (err) {
+      if (err.response?.status === 401) logout();
     } finally {
       setLoading(false);
     }
@@ -34,25 +30,15 @@ export const InventoryProvider = ({ children }) => {
     async (item) => {
       if (!isAuthenticated) return;
       try {
-        if (item.id) {
-          await repo.update(item.id, item);
-        } else {
-          await repo.create(item);
-        }
+        item.id ? await repo.update(item.id, item) : await repo.create(item);
         await fetchItems();
         setModalOpen(false);
         setEditingItem(null);
-      } catch (error) {
-        console.error("Error saving item:", error);
-        if (
-          error?.response?.status === 401 ||
-          error.message === "Unauthorized"
-        ) {
-          logout();
-        }
+      } catch (err) {
+        if (err.response?.status === 401) logout();
       }
     },
-    [repo, isAuthenticated, logout, fetchItems]
+    [repo, isAuthenticated, fetchItems, logout]
   );
 
   const confirmDelete = useCallback(async () => {
@@ -61,17 +47,14 @@ export const InventoryProvider = ({ children }) => {
       await repo.delete(deleteItem.id);
       setDeleteItem(null);
       await fetchItems();
-    } catch (error) {
-      console.error("Error deleting item:", error);
-      if (error?.response?.status === 401 || error.message === "Unauthorized") {
-        logout();
-      }
+    } catch (err) {
+      if (err.response?.status === 401) logout();
     }
-  }, [repo, deleteItem, isAuthenticated, logout, fetchItems]);
+  }, [repo, deleteItem, isAuthenticated, fetchItems, logout]);
 
   useEffect(() => {
     fetchItems();
-  }, [fetchItems]); // ✅ тепер ESLint щасливий
+  }, [fetchItems]);
 
   return (
     <InventoryContext.Provider

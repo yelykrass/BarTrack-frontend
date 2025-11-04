@@ -1,85 +1,34 @@
-import axios from "axios";
+import BaseRepository from "./BaseRepository";
 
-export default class AuthRepository {
-  constructor() {
-    this.baseUri = import.meta.env.VITE_API_URL || "";
-  }
-
-  /**
-   * Логін користувача через Basic Auth (GET)
-   * @param {{ email: string, password: string }} credentials
-   * @returns {Promise<{auth: string, user: Object}>}
-   */
-  async login(credentials) {
+export default class AuthRepository extends BaseRepository {
+  async login({ email, password }) {
     try {
-      const response = await axios.get(`${this.baseUri}/login`, {
-        auth: {
-          username: credentials.email,
-          password: credentials.password,
-        },
-        withCredentials: true,
+      const res = await this.api.get("/login", {
+        auth: { username: email, password },
       });
-
-      if (response.status === 202 || response.status === 200) {
-        return { auth: true, user: response.data.user || null };
-      } else {
-        return { auth: false };
-      }
-    } catch (error) {
-      console.error("Login error:", error);
-      if (error.response?.status === 401) {
+      return { auth: true, user: res.data.user || null };
+    } catch (err) {
+      if (err.response?.status === 401)
         throw new Error("Email o contraseña incorrectos");
-      } else if (!error.response) {
-        throw new Error("Error al conectarse al servidor");
-      }
-      throw new Error("Error al iniciar sesión");
+      throw new Error("Error de conexión");
     }
   }
 
   async logout() {
     try {
-      const response = await axios.post(
-        `${this.baseUri}/logout`,
-        {},
-        { withCredentials: true }
-      );
-
-      if (response.status === 200) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      console.warn("Logout request failed:", error);
-      if (!error.response) {
-        throw new Error("Error al conectarse al servidor");
-      }
-      throw new Error("Error al cerrar sesión");
+      await this.api.post("/logout");
+      return true;
+    } catch {
+      return false;
     }
   }
 
   async checkSession() {
     try {
-      const response = await axios.get(`${this.baseUri}/check-session`, {
-        withCredentials: true,
-      });
-      return response.data; // { auth: true/false, user }
-    } catch (error) {
-      console.warn("Check session failed:", error);
-      if (error.response?.status === 401) {
-        return { auth: false, user: null, message: "La sesión ha terminado." };
-      } else if (!error.response) {
-        return {
-          auth: false,
-          user: null,
-          message: "Error al conectarse al servidor",
-        };
-      }
-      return {
-        auth: false,
-        user: null,
-        message: "Error al verificar la sesión",
-      };
+      const res = await this.api.get("/check-session");
+      return res.data;
+    } catch {
+      return { auth: false, user: null };
     }
   }
 }
